@@ -23,7 +23,7 @@ import traceback
 
 APB_SIZE = 3
 
-exp = Experiment("ns3ai_apb_msg_vec", "../../../../../", py_binding,
+exp = Experiment("ns3ai_apb_msg_vec", "/ns3-workspace", py_binding,
                  handleFinish=True, useVector=True, vectorSize=APB_SIZE)
 msgInterface = exp.run(show_output=True)
 
@@ -38,7 +38,7 @@ try:
         msgInterface.PySendBegin()
         for i in range(len(msgInterface.GetCpp2PyVector())):
             # calculate the sums
-            msgInterface.GetPy2CppVector()[i].c = msgInterface.GetCpp2PyVector()[i].a + msgInterface.GetCpp2PyVector()[i].b
+            msgInterface.GetPy2CppVector()[i].c = msgInterface.GetCpp2PyVector()[i].a * msgInterface.GetCpp2PyVector()[i].b
         msgInterface.PyRecvEnd()
         msgInterface.PySendEnd()
 
