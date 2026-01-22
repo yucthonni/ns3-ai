@@ -1,10 +1,62 @@
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
-import messages_pb2 as pb
-import ns3ai_gym_msg_py as py_binding
-from ns3ai_utils import Experiment
+import sys
+import os
 
+# 关键：使用绝对路径导入 messages_pb2
+# 获取 gym-interface/py 目录的绝对路径
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
+gym_interface_py_dir = os.path.abspath(os.path.join(current_file_dir, '../../..'))
+
+# 添加到 Python 路径（如果不在其中）
+if gym_interface_py_dir not in sys.path:
+    sys.path.insert(0, gym_interface_py_dir)
+
+# 现在可以安全导入 messages_pb2
+try:
+    import messages_pb2 as pb
+except ImportError:
+    # 备用方案：直接从文件导入
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "messages_pb2", 
+        os.path.join(gym_interface_py_dir, "messages_pb2.py")
+    )
+    pb = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pb)
+
+# 其他导入保持不变
+import os
+import sys
+import importlib.util
+
+# 动态导入 ns3ai_gym_msg_py
+def import_py_binding():
+    # 获取共享库的绝对路径
+    current_file = os.path.abspath(__file__)
+    py_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_file)))
+    so_file = os.path.join(py_dir, "ns3ai_gym_msg_py.so")
+    
+    if not os.path.exists(so_file):
+        # 如果 .so 文件不存在，尝试带版本号的文件
+        so_files = [f for f in os.listdir(py_dir) if f.startswith("ns3ai_gym_msg_py") and f.endswith(".so")]
+        if so_files:
+            so_file = os.path.join(py_dir, so_files[0])
+    
+    if os.path.exists(so_file):
+        # 动态加载共享库
+        spec = importlib.util.spec_from_file_location("ns3ai_gym_msg_py", so_file)
+        py_binding = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(py_binding)
+        return py_binding
+    else:
+        raise ImportError(f"Cannot find ns3ai_gym_msg_py shared library in {py_dir}")
+
+# 导入共享库
+py_binding = import_py_binding()
+
+from ns3ai_utils import Experiment
 
 class Ns3Env(gym.Env):
     _created = False
