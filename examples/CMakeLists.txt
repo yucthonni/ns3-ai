@@ -1,3 +1,6 @@
 add_subdirectory(a-plus-b)
 add_subdirectory(lte-cqi)
 add_subdirectory(nr-ai-minimal)
+add_subdirectory(nr-sionna-ai)
+add_subdirectory(nr-traces-ai)
+add_subdirectory(5g-abr)
